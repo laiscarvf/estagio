@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <script src="js/campo-minado.js"></script>
+</head>
+
+<body>
+
+    <div id="exibir-execucao"></div>
+
+    <script>
+        var campoMinado = new CampoMinado();
+
+        document.getElementById('exibir-execucao').innerHTML += '----------- Início do jogo -----------';
+        document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+
+        //guardar a posição das bombas
+        var matrizBombas = [[]];
+
+        var stringReplicada;
+        var matrizReplicada = [[]];
+        //função criada para evitar repetição de código ao remover caracteres indesejados no tabuleiro
+        function ReplaceMatriz() {
+            stringReplicada = campoMinado.Tabuleiro().replaceAll("\r\n", "");
+            var cont = 0;
+
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    matrizReplicada[[i, j]] = stringReplicada[cont++];
+                }
+            }
+        }
+        //chamada da função
+        ReplaceMatriz();
+        //função que recebe a replica da matriz original para verificar em quais casas há bombas
+        function verificarBombas(matriz) {
+            var casasFechadas;
+            //laço de repetição para percorrer toda a tabela
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    //condição que só entra se for um número acima de 0
+                    if (matriz[[i, j]] != '-' && matriz[[i, j]] != '0') {
+                        //variável que armazena a quantidade de casas fechadas ao redor que uma casa aberta
+                        casasFechadas = 0;
+
+                        // verifica casa abaixo
+                        if (matriz[[i + 1, j]] == '-') {
+                            casasFechadas++;
+                        }
+
+                        //verifica direita
+                        if (matriz[[i, j + 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica esquerda
+                        if (matriz[[i, j - 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica direita abaixo
+                        if (matriz[[i + 1, j + 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica esquerda abaixo
+                        if (matriz[[i + 1, j - 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica esquerda acima
+                        if (matriz[[i - 1, j - 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica direita acima
+                        if (matriz[[i - 1, j + 1]] == '-') {
+                            casasFechadas++;
+                        }
+                        //verifica acima
+                        if (matriz[[i - 1, j]] == '-') {
+                            casasFechadas++;
+                        }
+                        //se o número de casas fechadas for igual ao número da casa, entra na condição
+                        if (casasFechadas == matriz[[i, j]]) {
+                            //depois que foi verificado se o número da casa é igual ao número de casas fechadas,
+                            //coloca um 'b' para marcar as bombas
+                            if (matriz[[i + 1, j]] == '-') {
+                                matrizBombas[[i + 1, j]] = 'b'
+                            }
+
+                            if (matriz[[i, j + 1]] == '-') {
+                                matrizBombas[[i, j + 1]] = 'b'
+                            }
+
+                            if (matriz[[i, j - 1]] == '-') {
+                                matrizBombas[[i, j - 1]] = 'b'
+                            }
+
+                            if (matriz[[i + 1, j + 1]] == '-') {
+                                matrizBombas[[i + 1, j + 1]] = 'b'
+                            }
+
+                            if (matriz[[i + 1, j - 1]] == '-') {
+                                matrizBombas[[i + 1, j - 1]] = 'b'
+                            }
+
+                            if (matriz[[i - 1, j - 1]] == '-') {
+                                matrizBombas[[i - 1, j - 1]] = 'b'
+                            }
+
+                            if (matriz[[i - 1, j + 1]] == '-') {
+                                matrizBombas[[i - 1, j + 1]] = 'b'
+                            }
+
+                            if (matriz[[i - 1, j]] == '-') {
+                                matrizBombas[[i - 1, j]] = 'b'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        //se não acabaram as casas limpas, entra na condição
+        if (campoMinado.JogoStatus() == 0) {
+            for (var i = 0; i < 9; i++) {
+                for (var j = 0; j < 9; j++) {
+                    //chamada da função
+                    verificarBombas(matrizReplicada);
+                    //verifica onde nas posições da matriz que guarda as posições das bombas uma bomba foi marcada 
+                    if (matrizBombas[[i, j]] != 'b') {
+                        campoMinado.Abrir(i + 1, j + 1);
+                        if (matrizReplicada[[i, j]] == "-") {
+                            document.getElementById('exibir-execucao').innerHTML += '<br>----------- Status: Jogo em Andamento -----------';
+                            document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+                            document.getElementById('exibir-execucao').innerHTML += 'Aberta Casa (' + (i + 1) + ',' + (j + 1) + ')';
+                        }
+                        //chamada da função para repor a matriz 
+                        ReplaceMatriz();
+                    }
+
+                    if (matrizBombas[[i, j]] == 'b') {
+                        document.getElementById('exibir-execucao').innerHTML += '<br>Bomba Encontrada na Casa (' + (i + 1) + ',' + (j + 1) + ')';
+                    }
+                }
+            }
+            //se achou bomba
+        } if (campoMinado.JogoStatus() == 2) {
+            document.getElementById('exibir-execucao').innerHTML += '<br>----------- Status: Derrota -----------';
+            document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+        }
+        //se acabaram as casas limpas e nenhuma bomba foi acionada
+        else {
+            document.getElementById('exibir-execucao').innerHTML += '<br>----------- Status: Vitória -----------';
+            document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+        }
+    </script>
+</body>
+
+</html>
